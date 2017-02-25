@@ -2181,13 +2181,22 @@ class TestTorch(TestCase):
         self.assertRaises(RuntimeError, lambda: tensor.view(15, -1, -1))
 
     def test_expand(self):
-        result = torch.Tensor()
-        tensor = torch.rand(8, 1)
-        template = torch.rand(8, 5)
+        tensor = torch.rand(1, 8, 1)
+        tensor2 = torch.rand(5)
+        template = torch.rand(4, 8, 5)
         target = template.size()
         self.assertEqual(tensor.expand_as(template).size(), target)
-        self.assertEqual(tensor.expand(8, 5).size(), target)
-        self.assertEqual(tensor.expand(torch.Size([8, 5])).size(), target)
+        self.assertEqual(tensor.expand(4, 8, 5).size(), target)
+        self.assertEqual(tensor.expand(target).size(), target)
+        self.assertEqual(tensor2.expand_as(template).size(), target)
+        self.assertEqual(tensor2.expand(4, 8, 5).size(), target)
+        self.assertEqual(tensor2.expand(target).size(), target)
+
+        # make sure it's compatible with unsqueeze
+        expanded = tensor2.expand(1, 1, 5)
+        unsqueezed = tensor2.unsqueeze(0).unsqueeze(1)
+        self.assertEqual(expanded, unsqueezed)
+        self.assertEqual(expanded.stride(), unsqueezed.stride())
 
     def test_repeat(self):
         result = torch.Tensor()
